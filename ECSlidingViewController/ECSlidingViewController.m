@@ -200,9 +200,29 @@
 }
 
 - (UIStoryboardSegue *)segueForUnwindingToViewController:(UIViewController *)toViewController fromViewController:(UIViewController *)fromViewController identifier:(NSString *)identifier {
+    if (toViewController.presentedViewController == fromViewController) {
+      return [super segueForUnwindingToViewController:toViewController fromViewController:fromViewController identifier:identifier];
+    }
+    
     ECSlidingSegue *unwindSegue = [[ECSlidingSegue alloc] initWithIdentifier:identifier source:fromViewController destination:toViewController];
     [unwindSegue setValue:@YES forKey:@"isUnwinding"];
     return unwindSegue;
+}
+
+- (UIViewController *)viewControllerForUnwindSegueAction:(SEL)action fromViewController:(UIViewController *)fromViewController withSender:(id)sender {
+  UIViewController *unwindTargetViewController = nil;
+  
+  if ([self.topViewController canPerformUnwindSegueAction:action fromViewController:fromViewController withSender:sender]) {
+    unwindTargetViewController = self.topViewController;
+  } else if ([self.underLeftViewController canPerformUnwindSegueAction:action fromViewController:fromViewController withSender:sender]) {
+    unwindTargetViewController = self.underLeftViewController;
+  } else if ([self.underRightViewController canPerformUnwindSegueAction:action fromViewController:fromViewController withSender:sender]) {
+    unwindTargetViewController = self.underRightViewController;
+  } else {
+    unwindTargetViewController = [super viewControllerForUnwindSegueAction:action fromViewController:fromViewController withSender:sender];
+  }
+  
+  return unwindTargetViewController;
 }
 
 - (UIViewController *)childViewControllerForStatusBarHidden {
